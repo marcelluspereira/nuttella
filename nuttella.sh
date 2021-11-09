@@ -30,16 +30,20 @@
 ### Definitions
 
 ## Version
-VERSION=0.1
+VERSION=0.2
 
 ## Author
 AUTHOR="Marcellus Pereira" 
 AUTHORS_EMAIL="marcellus.pereiraATgmail.com"
 
+## Defaults
+DESCRIPTION="This is my first program"
+NAME="My first program"
+
 ## Directories
 NUTTX_ROOT="$HOME/nuttxspace"
 #NUTTX_ROOT="/tmp/"
-SUBDIR="apps/examples/"
+SUBDIR="apps/examples"
 
 ## Verbosity
 VERBOSE_OUTPUT=1
@@ -58,14 +62,14 @@ Help()
    # Display Help
    echo "Configures the scripts for you application's source code."
    echo
-   echo "Syntax: nuttella [-a|d|D|e|h|s|t|v] <name_of_your_application>"
+   echo "Syntax: nuttella [-a|d|D|e|h|N|s|t|v] <name_of_your_application>"
    echo "options:"
    echo " -a	author's name."
    echo " -e	author's email."
    echo " -d	full path to your nuttx directory. Default is <~/nuttxspace/>."
-   echo " -D	program's description for Kconfig file."
+   echo " -D	program's description for Kconfig file. Default is \"This is my first program\""
    echo " -h	print this Help."
-   echo " -N	program's name for Kconfig file."
+   echo " -N	program's name for Kconfig file. Default is \"My first program\""
    echo " -t	create a subdirectory under [a]pps | [e]xamples directory."
    echo " -s	shh..."
    echo " -v	version information."
@@ -87,29 +91,33 @@ Version()
 while getopts ":a:t:d:e:hsD:N:v" option; do
     case $option in
 	a) AUTHOR=$OPTARG;;
-        t) Type=$OPTARG
-    	   # Type = a (application) | e (example)
-    	   if [[ "$Type" = "a" ]]; then
-    		SUBDIR="apps"
-    	   elif [[ "$Type" = "e" ]]; then
-    		SUBDIR="apps/examples"
-    	   else
-    		echo -e "${RED}Error!${YELLOW} -$OPTARG${NC} invalid option."
-    	    exit
-    	   fi;;
-        d) NUTTX_ROOT=$OPTARG;;
-        D) DESCRIPTION=$OPTARG;;
+    t) Type=$OPTARG
+       # Type = a (application) | e (example)
+       if [[ "$Type" = "a" ]]; then
+    	SUBDIR="apps"
+       elif [[ "$Type" = "e" ]]; then
+    	SUBDIR="apps/examples"
+       else
+    	echo -e "${RED}Error!${YELLOW} -$OPTARG${NC} invalid option."
+       exit
+       fi;;
+    d) NUTTX_ROOT=$OPTARG;;
+    D) DESCRIPTION=$OPTARG;;
 	e) AUTHORS_EMAIL=$OPTARG;;
-        h) # Show help
-	       Help
-	       exit;;
-        N) NAME=$OPTARG;;
+    h) # Show help
+	   Help
+	   exit;;
+    N) NAME=$OPTARG
+	   if [ -z "$NAME" ] || [[ ${NAME:0:1} == "-" ]]; then
+		echo -e "${RED}Error!${YELLOW} -N invalid option."
+		exit
+	   fi;;
 	s) VERBOSE_OUTPUT=0;;
-        v) Version
-	       exit;;
-        \?) printf "${RED}Error:${NC} Invalid option. Try -h, please.\n"
-	       exit;;
-        :) echo -e "${RED}Invalid option!${NC} -$OPTARG needs an argument."
+    v) Version
+	   exit;;
+    \?) printf "${RED}Error:${NC} Invalid option. Try -h, please.\n"
+	    exit;;
+    :) echo -e "${RED}Invalid option!${NC} -$OPTARG needs an argument."
 	       exit;;
     esac
 done
@@ -139,7 +147,7 @@ cat << EOF >$DIRECTORY/$FILENAME"_main.c"
  * $SUBDIR/$FILENAME_main.c
  *
  *   Copyright (C) `date +'%Y'` $AUTHOR. All rights reserved.
- *   Author: %AUTHOR <AUTHORS_EMAIL>
+ *   Author: $AUTHOR <$AUTHORS_EMAIL>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
